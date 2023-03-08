@@ -10,8 +10,8 @@ services:
     env_file:
       - .env
     build:
-      context: ../../../
-      dockerfile: ./jaspersoft-containers/Docker/jrs/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       args:
         - INSTALL_CHROMIUM
         - JASPERREPORTS_SERVER_VERSION
@@ -37,8 +37,8 @@ services:
     env_file:
       - .env
     build:
-      context: ../../../
-      dockerfile: ./jaspersoft-containers/Docker/jrs/Dockerfile.buildomatic
+      context: .
+      dockerfile: Dockerfile.buildomatic
       args:
         - JASPERREPORTS_SERVER_VERSION
         - JDK_BASE_IMAGE

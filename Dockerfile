@@ -5,18 +5,18 @@
 #ARG TOMCAT_BASE_IMAGE=tomcat:9.0.54-jdk11-corretto
 ARG TOMCAT_BASE_IMAGE=tomcat:9.0.54-jdk11-openjdk
 ARG INSTALL_CHROMIUM=false
-ARG JASPERREPORTS_SERVER_VERSION=8.1.1
+ARG JASPERREPORTS_SERVER_VERSION=8.1.0
 
 FROM ${TOMCAT_BASE_IMAGE} as deployment
 
 ARG JASPERREPORTS_SERVER_VERSION
 ARG INSTALL_CHROMIUM
-ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/jrs
-ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
+ARG CONTAINER_DISTRO=.
+ARG JRS_DISTRO=/sources/jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
 
 ENV INSTALL_CHROMIUM ${INSTALl_CHROMIUM:-false}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.1}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.0}
 ENV JRS_HOME /usr/src/jasperreports-server
 ENV BUILDOMATIC_MODE non-interactive
 
@@ -52,7 +52,7 @@ FROM ${TOMCAT_BASE_IMAGE}
 
 ARG INSTALL_CHROMIUM
 ARG JASPERREPORTS_SERVER_VERSION
-ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/jrs
+ARG CONTAINER_DISTRO=.
 ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
 
 
@@ -66,8 +66,8 @@ LABEL "org.jasperosft.name"="JasperReports Server" \
 
 COPY ${CONTAINER_DISTRO}/scripts/entrypoint.sh /usr/local/scripts/entrypoint.sh
 COPY ${CONTAINER_DISTRO}/scripts/installPackagesForJasperserver-pro.sh /usr/local/scripts/installPackagesForJasperserver-pro.sh
-RUN  chmod +x /usr/local/scripts/*.sh && \
-     /usr/local/scripts/installPackagesForJasperserver-pro.sh
+RUN  chmod +x /usr/local/scripts/*.sh
+RUN /usr/local/scripts/installPackagesForJasperserver-pro.sh
 
 
 RUN useradd  -m jasperserver -u 10099 && chown -R jasperserver:root $CATALINA_HOME && \
@@ -79,7 +79,7 @@ USER 10099
 WORKDIR $CATALINA_HOME
 COPY --from=deployment --chown=jasperserver:root /usr/local/tomcat .
 COPY --chown=jasperserver:root ${CONTAINER_DISTRO}/resources/jasperserver-customization .
-COPY --chown=jasperserver:root ${CONTAINER_DISTRO}/cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/
+# COPY --chown=jasperserver:root ${CONTAINER_DISTRO}/cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/
 
 
 EXPOSE 8080 8443

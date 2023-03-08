@@ -6,11 +6,11 @@
 ARG JDK_BASE_IMAGE=openjdk:11-jdk
 FROM ${JDK_BASE_IMAGE}
 
-ARG JASPERREPORTS_SERVER_VERSION=8.1.1
-ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/jrs
-ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
+ARG JASPERREPORTS_SERVER_VERSION=8.1.0
+ARG CONTAINER_DISTRO=.
+ARG JRS_DISTRO=/sources/jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.1}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.0}
 ENV JRS_HOME /usr/src/jasperreports-server
 ENV BUILDOMATIC_MODE non-interactive
 ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
@@ -30,12 +30,12 @@ COPY ${CONTAINER_DISTRO}/scripts/buildomatic-entrypoint.sh /usr/local/scripts/en
 COPY ${CONTAINER_DISTRO}/resources/default-properties /usr/src/jasperreports-server/buildomatic
 COPY ${CONTAINER_DISTRO}/resources/buildomatic-customization ${JRS_HOME}/buildomatic/
 
-RUN chmod +x /usr/local/scripts/*.sh && \
-    chmod +x ${JRS_HOME}/buildomatic/js-* && \
-    chmod +x ${JRS_HOME}/buildomatic/bin/*.sh && \
-    chmod +x ${JRS_HOME}/apache-ant/bin/* && \
-    mkdir -p /usr/local/share/jasperserver-pro/keystore && \
-    /usr/local/scripts/installPackagesForBuildomatic.sh
+RUN chmod +x /usr/local/scripts/*.sh
+RUN chmod +x ${JRS_HOME}/buildomatic/js-*
+RUN chmod +x ${JRS_HOME}/buildomatic/bin/*.sh
+RUN chmod +x ${JRS_HOME}/apache-ant/bin/*
+RUN mkdir -p /usr/local/share/jasperserver-pro/keystore
+RUN /usr/local/scripts/installPackagesForBuildomatic.sh
 
 WORKDIR ${JRS_HOME}/buildomatic/
 
