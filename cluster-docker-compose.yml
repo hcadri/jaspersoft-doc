@@ -1,0 +1,58 @@
+# Copyright (c) 2021-2021. TIBCO Software Inc.
+# This file is subject to the license terms contained
+# in the license file that is distributed with this file
+
+version: '3.9'
+
+services:
+  ##### JRS First instance
+  jasperserver-webapp:
+    image: "${JASPERREPORTS_SERVER_APP_IMAGE_NAME}:${JASPERREPORTS_SERVER_APP_IMAGE_TAG}"
+    networks:
+      - jrs_network
+    env_file: .env
+    environment:
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
+    volumes:
+      - ./resources/keystore:/usr/local/share/jasperserver-pro/keystore
+      - ./resources/license/jasperserver.license:/usr/local/share/jasperserver-pro/license/jasperserver.license
+    mem_limit: 6g
+    mem_reservation: 3g
+    cpu_shares: 1000
+    deploy:
+      mode: replicated
+      replicas: 2
+    depends_on:
+      - activemq
+
+  ####### Loadbalancer to manage the JRS Instances and session replication
+  haproxy:
+    image: haproxy:2.3.9-alpine
+    networks:
+      - jrs_network
+    ports:
+      - 80:80
+      - 9999:9999
+    volumes:
+      - ./cluster-config:/usr/local/etc/haproxy
+    depends_on:
+      - jasperserver-webapp
+
+  ##### Repository cache replication runs on 61616 port and 8161 to access from web
+  activemq:
+    image: bansamadev/activemq:5.17.2
+    networks:
+      - jrs_network
+    ports:
+      - 8161:8161
+      - 61616:61616
+
+networks:
+  jrs_network:
+    # use the bridge driver, but enable IPv6
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+          gateway: 172.16.238.1
